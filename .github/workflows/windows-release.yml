@@ -1,0 +1,72 @@
+name: Build and publish OdyCSUnmuter Windows release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Release tag, for example v0.1.0-beta.1"
+        required: true
+        default: "v0.1.0-beta.1"
+
+permissions:
+  contents: write
+
+jobs:
+  windows-release:
+    runs-on: windows-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Select stable Rust
+        shell: pwsh
+        run: |
+          rustup update stable
+          rustup default stable
+          rustc --version
+          cargo --version
+
+      - name: Prepare locally patched source2-demo
+        shell: pwsh
+        run: .\prepare-faceit-parser.ps1
+
+      - name: Build OdyCSUnmuter
+        shell: pwsh
+        run: cargo build --release
+
+      - name: Package Windows ZIP
+        shell: pwsh
+        run: .\scripts\package-release.ps1 -Version "${{ inputs.version }}"
+
+      - name: Upload workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: OdyCSUnmuter-Beta-${{ inputs.version }}-windows-x64
+          path: |
+            dist/*.zip
+            dist/*.sha256
+          if-no-files-found: error
+
+      - name: Create or update GitHub pre-release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ inputs.version }}
+        run: |
+          $zip = Get-ChildItem .\dist\*.zip | Select-Object -First 1
+          $sha = Get-ChildItem .\dist\*.sha256 | Select-Object -First 1
+
+          gh release view $env:RELEASE_TAG *> $null
+          if ($LASTEXITCODE -eq 0) {
+            gh release upload $env:RELEASE_TAG $zip.FullName $sha.FullName --clobber
+          }
+          else {
+            gh release create $env:RELEASE_TAG `
+              $zip.FullName `
+              $sha.FullName `
+              --target "${{ github.sha }}" `
+              --title "OdyCSUnmuter Beta $env:RELEASE_TAG" `
+              --notes-file .\RELEASE_NOTES.md `
+              --prerelease
+          }
