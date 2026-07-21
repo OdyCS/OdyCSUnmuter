@@ -1,0 +1,21 @@
+[package]
+name = "odycs-unmuter"
+version = "0.1.0-beta.1"
+edition = "2021"
+description = "Rewrites downloaded CS2 demos so globally communication-muted players can be heard during offline playback."
+license = "MIT"
+repository = "https://github.com/OdyCS/OdyCSUnmuter"
+keywords = ["cs2", "demo", "source2", "voice"]
+categories = ["command-line-utilities", "game-development"]
+
+[dependencies]
+anyhow = "=1.0.104"
+source2-demo = { version = "=0.5.8", default-features = false, features = ["cs2"] }
+
+[patch.crates-io]
+source2-demo = { path = "vendor/source2-demo" }
+
+[profile.release]
+debug = 1
+lto = "thin"
+codegen-units = 1

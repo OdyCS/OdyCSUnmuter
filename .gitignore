@@ -1,0 +1,10 @@
+/target/
+/vendor/
+/.source2-demo-bootstrap/
+/dist/
+*.dem
+*.dem.partial
+*_OdyCSunmuted.dem
+*.pdb
+.DS_Store
+Thumbs.db
