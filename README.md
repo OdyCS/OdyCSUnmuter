@@ -141,8 +141,6 @@ Build-and-Run-OdyCSUnmuter.bat "C:\path\match.dem"
 
 Project created, developed, and maintained by Ody.
 
-ChatGPT assisted with debugging, troubleshooting, and correcting implementation mistakes.
-
 Built using [`source2-demo`](https://github.com/Rupas1k/source2-demo) by
 Rupas1k and contributors under its MIT licensing option.
 
